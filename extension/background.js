@@ -26,6 +26,21 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     }
 });
 
+// Handle keyboard shortcuts (Emergency Stop: Cmd+Shift+S)
+chrome.commands.onCommand.addListener(async (command) => {
+    if (command === 'emergency-stop') {
+        const result = await stopSession();
+        if (result.success) {
+            // Show notification so user knows it worked without looking
+            chrome.action.setBadgeText({ text: '✓' });
+            chrome.action.setBadgeBackgroundColor({ color: '#22c55e' });
+            setTimeout(() => {
+                chrome.action.setBadgeText({ text: '' });
+            }, 2000);
+        }
+    }
+});
+
 // Message handler for popup communication
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.action) {
