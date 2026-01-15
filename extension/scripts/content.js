@@ -75,6 +75,7 @@ function extractPayRate() {
 
 function scrapeAndCacheRates() {
     const projectRates = {};
+    const bonusRates = {};
 
     // Find all project rows in the table
     const rows = document.querySelectorAll('tr');
@@ -91,20 +92,33 @@ function scrapeAndCacheRates() {
         const cells = row.querySelectorAll('td');
         for (const cell of cells) {
             const text = cell.textContent.trim();
+
+            // Match base rate: $XX.XX/hr
             const rateMatch = text.match(/\$(\d+\.?\d*)\/?hr/i);
             if (rateMatch) {
                 projectRates[projectName] = parseFloat(rateMatch[1]);
-                break;
+            }
+
+            // Match bonus rate: +$X/hr or bonus patterns
+            const bonusMatch = text.match(/\+\s*\$(\d+\.?\d*)/i) ||
+                text.match(/bonus[:\s]*\$(\d+\.?\d*)/i);
+            if (bonusMatch) {
+                bonusRates[projectName] = parseFloat(bonusMatch[1]);
             }
         }
     });
 
     // Save to chrome.storage if we found any rates
-    if (Object.keys(projectRates).length > 0) {
-        chrome.storage.local.get(['hourlyRates'], (result) => {
+    if (Object.keys(projectRates).length > 0 || Object.keys(bonusRates).length > 0) {
+        chrome.storage.local.get(['hourlyRates', 'bonusRates'], (result) => {
             const existingRates = result.hourlyRates || {};
+            const existingBonuses = result.bonusRates || {};
             const mergedRates = { ...existingRates, ...projectRates };
-            chrome.storage.local.set({ hourlyRates: mergedRates });
+            const mergedBonuses = { ...existingBonuses, ...bonusRates };
+            chrome.storage.local.set({
+                hourlyRates: mergedRates,
+                bonusRates: mergedBonuses
+            });
         });
     }
 }

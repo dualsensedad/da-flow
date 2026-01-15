@@ -50,12 +50,40 @@ async function handleMainButton() {
     } else {
         // Show confirmation modal before starting
         const projectName = document.getElementById('projectNameInput').value.trim() || 'Untitled Project';
-        showConfirmModal(projectName);
+        await showConfirmModal(projectName);
     }
 }
 
-function showConfirmModal(projectName) {
+async function showConfirmModal(projectName) {
     document.getElementById('modalProjectName').textContent = projectName;
+
+    // Look up pay rate from stored rates
+    const result = await chrome.storage.local.get(['hourlyRates', 'bonusRates']);
+    const hourlyRates = result.hourlyRates || {};
+    const bonusRates = result.bonusRates || {};
+
+    const rate = hourlyRates[projectName];
+    const bonus = bonusRates[projectName];
+
+    const rateEl = document.getElementById('modalPayRate');
+    const bonusEl = document.getElementById('modalBonus');
+    const bonusRow = document.getElementById('bonusRow');
+
+    if (rate !== undefined && rate !== null) {
+        rateEl.textContent = `$${rate.toFixed(2)}/hr`;
+        rateEl.classList.remove('unknown');
+    } else {
+        rateEl.textContent = 'Not found - visit dashboard first';
+        rateEl.classList.add('unknown');
+    }
+
+    if (bonus !== undefined && bonus !== null && bonus > 0) {
+        bonusEl.textContent = `+$${bonus.toFixed(2)}/hr`;
+        bonusRow.style.display = 'flex';
+    } else {
+        bonusRow.style.display = 'none';
+    }
+
     document.getElementById('confirmModal').style.display = 'flex';
 }
 

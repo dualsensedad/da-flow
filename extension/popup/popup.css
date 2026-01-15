@@ -284,3 +284,39 @@ body {
 .btn-secondary:hover {
   background: var(--border-color);
 }
+
+/* Rate Info in Modal */
+.modal-rate-info {
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.rate-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.rate-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.rate-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-green);
+}
+
+.rate-value.bonus {
+  color: #f59e0b;
+}
+
+.rate-value.unknown {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 12px;
+}

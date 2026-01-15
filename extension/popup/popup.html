@@ -57,6 +57,18 @@
     <div class="modal">
       <h2 class="modal-title">Start Session?</h2>
       <p class="modal-project" id="modalProjectName">Project Name</p>
+
+      <div class="modal-rate-info">
+        <div class="rate-row">
+          <span class="rate-label">Pay Rate:</span>
+          <span class="rate-value" id="modalPayRate">--</span>
+        </div>
+        <div class="rate-row bonus-row" id="bonusRow" style="display: none;">
+          <span class="rate-label">🔥 Bonus:</span>
+          <span class="rate-value bonus" id="modalBonus">--</span>
+        </div>
+      </div>
+
       <p class="modal-hint">Confirm you're ready to track this project.</p>
       <div class="modal-actions">
         <button id="modalCancel" class="btn btn-secondary">Cancel</button>
