@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DA Flow</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">DA Flow</h1>
+      <span class="subtitle">Time Tracker</span>
+    </header>
+
+    <div class="status-display" id="statusDisplay">
+      <div class="timer" id="timerDisplay">00:00</div>
+      <div class="project-name" id="projectDisplay">No active session</div>
+    </div>
+
+    <div class="input-group" id="inputGroup">
+      <input 
+        type="text" 
+        id="projectNameInput" 
+        placeholder="Project name..."
+        class="project-input"
+      >
+    </div>
+
+    <div class="controls">
+      <button id="mainBtn" class="btn btn-start">
+        Start Session
+      </button>
+      
+      <button id="pauseBtn" class="btn btn-pause" disabled>
+        ⏸️ Pause
+      </button>
+    </div>
+
+    <div class="quick-stats" id="quickStats">
+      <div class="stat">
+        <span class="stat-value" id="todayMinutes">0</span>
+        <span class="stat-label">mins today</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="sessionCount">0</span>
+        <span class="stat-label">sessions</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

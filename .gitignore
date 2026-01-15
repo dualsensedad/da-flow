@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+.DS_Store
+
+# Dashboard Build
+dashboard/dist/
+dashboard/.vite/
+
+# Extension Build (if any)
+extension/*.zip
+extension/*.crx
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Brain (if somehow included)
+brain/
