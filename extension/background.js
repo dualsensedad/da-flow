@@ -4,6 +4,16 @@
 const ALARM_NAME = 'da-flow-tick';
 const TICK_INTERVAL_MINUTES = 1;
 
+// Helper to notify all DA tabs about session changes
+async function notifyContentScripts(message) {
+    const tabs = await chrome.tabs.query({ url: 'https://app.dataannotation.tech/*' });
+    tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, message).catch(() => {
+            // Tab may not have content script loaded
+        });
+    });
+}
+
 // Initialize storage on install
 chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.local.get(['sessions', 'currentSession'], (result) => {
@@ -83,6 +93,12 @@ function startSession(projectName) {
 
     chrome.storage.local.set({ currentSession: session });
     chrome.alarms.create(ALARM_NAME, { periodInMinutes: TICK_INTERVAL_MINUTES });
+
+    // Notify content scripts to show widget
+    chrome.storage.local.get(['hourlyRates'], (result) => {
+        const rate = result.hourlyRates?.[projectName] || 0;
+        notifyContentScripts({ action: 'sessionStarted', projectName, rate });
+    });
 }
 
 async function stopSession() {
@@ -101,6 +117,10 @@ async function stopSession() {
                     currentSession: null
                 });
                 chrome.alarms.clear(ALARM_NAME);
+
+                // Notify content scripts to hide widget
+                notifyContentScripts({ action: 'sessionStopped' });
+
                 resolve({ success: true, session: session });
             } else {
                 resolve({ success: false });
