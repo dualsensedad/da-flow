@@ -5,7 +5,8 @@ import './App.css'
 function App() {
   const [sessions, setSessions] = useState([])
   const [hourlyRates, setHourlyRates] = useState({})
-  const [dailyGoal, setDailyGoal] = useState(100)
+  const [goalAmount, setGoalAmount] = useState(100)
+  const [goalPeriod, setGoalPeriod] = useState('daily')
 
   useEffect(() => {
     loadData()
@@ -13,7 +14,7 @@ function App() {
     // Listen for storage changes
     if (window.chrome && chrome.storage) {
       chrome.storage.onChanged.addListener((changes) => {
-        if (changes.sessions || changes.hourlyRates || changes.dailyGoal) {
+        if (changes.sessions || changes.hourlyRates || changes.goalAmount || changes.goalPeriod) {
           loadData()
         }
       })
@@ -24,19 +25,22 @@ function App() {
 
   const loadData = () => {
     if (window.chrome && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get(['sessions', 'hourlyRates', 'dailyGoal'], (result) => {
+      chrome.storage.local.get(['sessions', 'hourlyRates', 'goalAmount', 'goalPeriod'], (result) => {
         if (result.sessions) setSessions(result.sessions)
         if (result.hourlyRates) setHourlyRates(result.hourlyRates)
-        if (result.dailyGoal) setDailyGoal(result.dailyGoal)
+        if (result.goalAmount) setGoalAmount(result.goalAmount)
+        if (result.goalPeriod) setGoalPeriod(result.goalPeriod)
       })
     } else {
       const storedSessions = localStorage.getItem('da-flow-sessions')
       const storedRates = localStorage.getItem('da-flow-rates')
       const storedGoal = localStorage.getItem('da-flow-goal')
+      const storedPeriod = localStorage.getItem('da-flow-period')
 
       if (storedSessions) setSessions(JSON.parse(storedSessions))
       if (storedRates) setHourlyRates(JSON.parse(storedRates))
-      if (storedGoal) setDailyGoal(JSON.parse(storedGoal))
+      if (storedGoal) setGoalAmount(JSON.parse(storedGoal))
+      if (storedPeriod) setGoalPeriod(JSON.parse(storedPeriod))
     }
   }
 
@@ -70,9 +74,14 @@ function App() {
     saveData('hourlyRates', updated)
   }
 
-  const updateDailyGoal = (goal) => {
-    setDailyGoal(goal)
-    saveData('dailyGoal', goal)
+  const updateGoalAmount = (amount) => {
+    setGoalAmount(amount)
+    saveData('goalAmount', amount)
+  }
+
+  const updateGoalPeriod = (period) => {
+    setGoalPeriod(period)
+    saveData('goalPeriod', period)
   }
 
   return (
@@ -80,11 +89,13 @@ function App() {
       <Dashboard
         sessions={sessions}
         hourlyRates={hourlyRates}
-        dailyGoal={dailyGoal}
+        goalAmount={goalAmount}
+        goalPeriod={goalPeriod}
         onUpdateSession={updateSession}
         onToggleReported={toggleReported}
         onUpdateHourlyRate={updateHourlyRate}
-        onUpdateDailyGoal={updateDailyGoal}
+        onUpdateGoal={updateGoalAmount}
+        onUpdatePeriod={updateGoalPeriod}
       />
     </div>
   )

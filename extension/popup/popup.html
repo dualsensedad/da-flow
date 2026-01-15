@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DA Flow</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
   <div class="container">
     <header class="header">
@@ -19,19 +21,14 @@
     </div>
 
     <div class="input-group" id="inputGroup">
-      <input 
-        type="text" 
-        id="projectNameInput" 
-        placeholder="Project name..."
-        class="project-input"
-      >
+      <input type="text" id="projectNameInput" placeholder="Project name..." class="project-input">
     </div>
 
     <div class="controls">
       <button id="mainBtn" class="btn btn-start">
         Start Session
       </button>
-      
+
       <button id="pauseBtn" class="btn btn-pause" disabled>
         ⏸️ Pause
       </button>
@@ -55,6 +52,20 @@
     </footer>
   </div>
 
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal" style="display: none;">
+    <div class="modal">
+      <h2 class="modal-title">Start Session?</h2>
+      <p class="modal-project" id="modalProjectName">Project Name</p>
+      <p class="modal-hint">Confirm you're ready to track this project.</p>
+      <div class="modal-actions">
+        <button id="modalCancel" class="btn btn-secondary">Cancel</button>
+        <button id="modalConfirm" class="btn btn-start">Confirm & Start</button>
+      </div>
+    </div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
+
 </html>

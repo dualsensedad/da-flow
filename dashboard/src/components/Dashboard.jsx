@@ -6,30 +6,38 @@ import WeeklyEarnings from './WeeklyEarnings'
 export default function Dashboard({
     sessions,
     hourlyRates,
-    dailyGoal,
+    goalAmount,
+    goalPeriod,
     onUpdateSession,
     onToggleReported,
     onUpdateHourlyRate,
-    onUpdateDailyGoal
+    onUpdateGoal,
+    onUpdatePeriod
 }) {
     const [activeTab, setActiveTab] = useState('overview')
 
-    const todayStats = useMemo(() => {
-        const today = new Date().toDateString()
-        const todaySessions = sessions.filter(s =>
-            new Date(s.startTime).toDateString() === today
-        )
+    const stats = useMemo(() => {
+        const now = new Date()
+        const today = now.toDateString()
 
-        let totalMinutes = 0
-        let totalEarnings = 0
+        let todayMinutes = 0
+        let todayEarnings = 0
+        let todaySessions = 0
+        let allTimeEarnings = 0
 
-        todaySessions.forEach(session => {
-            totalMinutes += session.activeMinutes || 0
+        sessions.forEach(session => {
             const rate = hourlyRates[session.projectName] || 0
-            totalEarnings += (session.activeMinutes / 60) * rate
+            const earnings = (session.activeMinutes / 60) * rate
+            allTimeEarnings += earnings
+
+            if (new Date(session.startTime).toDateString() === today) {
+                todayMinutes += session.activeMinutes || 0
+                todayEarnings += earnings
+                todaySessions++
+            }
         })
 
-        return { totalMinutes, totalEarnings, sessionCount: todaySessions.length }
+        return { todayMinutes, todayEarnings, todaySessions, allTimeEarnings }
     }, [sessions, hourlyRates])
 
     return (
@@ -43,32 +51,41 @@ export default function Dashboard({
             </header>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
                     <p className="text-slate-400 text-sm uppercase tracking-wide">Today's Time</p>
                     <p className="text-3xl font-bold text-emerald-400 mt-2">
-                        {Math.floor(todayStats.totalMinutes / 60)}h {todayStats.totalMinutes % 60}m
+                        {Math.floor(stats.todayMinutes / 60)}h {stats.todayMinutes % 60}m
                     </p>
                 </div>
                 <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
                     <p className="text-slate-400 text-sm uppercase tracking-wide">Today's Earnings</p>
                     <p className="text-3xl font-bold text-blue-400 mt-2">
-                        ${todayStats.totalEarnings.toFixed(2)}
+                        ${stats.todayEarnings.toFixed(2)}
                     </p>
                 </div>
                 <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
                     <p className="text-slate-400 text-sm uppercase tracking-wide">Sessions Today</p>
                     <p className="text-3xl font-bold text-purple-400 mt-2">
-                        {todayStats.sessionCount}
+                        {stats.todaySessions}
+                    </p>
+                </div>
+                <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+                    <p className="text-slate-400 text-sm uppercase tracking-wide">Total Earned (All-Time)</p>
+                    <p className="text-3xl font-bold text-amber-400 mt-2">
+                        ${stats.allTimeEarnings.toFixed(2)}
                     </p>
                 </div>
             </div>
 
             {/* Goal Progress */}
             <GoalProgress
-                currentEarnings={todayStats.totalEarnings}
-                dailyGoal={dailyGoal}
-                onUpdateGoal={onUpdateDailyGoal}
+                sessions={sessions}
+                hourlyRates={hourlyRates}
+                goalAmount={goalAmount}
+                goalPeriod={goalPeriod}
+                onUpdateGoal={onUpdateGoal}
+                onUpdatePeriod={onUpdatePeriod}
             />
 
             {/* Tabs */}

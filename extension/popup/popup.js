@@ -12,7 +12,7 @@ async function initializePopup() {
     // Check for auto-detected project name from content script
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-    if (tab && tab.url && tab.url.includes('worker.dataannotation.tech')) {
+    if (tab && tab.url && tab.url.includes('app.dataannotation.tech')) {
         try {
             const response = await chrome.tabs.sendMessage(tab.id, { action: 'getProjectTitle' });
             if (response && response.title) {
@@ -33,24 +33,46 @@ function setupEventListeners() {
     document.getElementById('openDashboardBtn').addEventListener('click', () => {
         chrome.tabs.create({ url: chrome.runtime.getURL('dashboard/index.html') });
     });
+
+    // Modal event listeners
+    document.getElementById('modalCancel').addEventListener('click', hideConfirmModal);
+    document.getElementById('modalConfirm').addEventListener('click', confirmStartSession);
 }
 
 async function handleMainButton() {
     const status = await chrome.runtime.sendMessage({ action: 'getStatus' });
 
     if (status && status.isActive) {
+        // Stop session directly (no confirmation needed)
         await chrome.runtime.sendMessage({ action: 'stopSession' });
+        await updateUI();
+        await updateStats();
     } else {
-        const projectName = document.getElementById('projectNameInput').value.trim();
-        await chrome.runtime.sendMessage({ action: 'startSession', projectName });
+        // Show confirmation modal before starting
+        const projectName = document.getElementById('projectNameInput').value.trim() || 'Untitled Project';
+        showConfirmModal(projectName);
     }
+}
 
+function showConfirmModal(projectName) {
+    document.getElementById('modalProjectName').textContent = projectName;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+
+function hideConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+}
+
+async function confirmStartSession() {
+    const projectName = document.getElementById('projectNameInput').value.trim();
+    await chrome.runtime.sendMessage({ action: 'startSession', projectName });
+    hideConfirmModal();
     await updateUI();
     await updateStats();
 }
 
 async function handlePauseButton() {
-    const response = await chrome.runtime.sendMessage({ action: 'togglePause' });
+    await chrome.runtime.sendMessage({ action: 'togglePause' });
     await updateUI();
 }
 
@@ -62,7 +84,6 @@ async function updateUI() {
     const timerDisplay = document.getElementById('timerDisplay');
     const projectDisplay = document.getElementById('projectDisplay');
     const projectInput = document.getElementById('projectNameInput');
-    const inputGroup = document.getElementById('inputGroup');
 
     if (status && status.isActive) {
         // Session is active
