@@ -10,7 +10,7 @@
     "activeTab"
   ],
   "host_permissions": [
-    "https://worker.dataannotation.tech/*"
+    "https://app.dataannotation.tech/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -30,8 +30,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://worker.dataannotation.tech/*"],
-      "js": ["scripts/content.js"]
+      "matches": [
+        "https://app.dataannotation.tech/*"
+      ],
+      "js": [
+        "scripts/content.js"
+      ]
     }
   ]
 }
