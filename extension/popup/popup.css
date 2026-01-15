@@ -202,3 +202,25 @@ body {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+.footer {
+  margin-top: 20px;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent-green);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btn-link:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}

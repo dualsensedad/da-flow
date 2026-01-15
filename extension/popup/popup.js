@@ -30,6 +30,9 @@ async function initializePopup() {
 function setupEventListeners() {
     document.getElementById('mainBtn').addEventListener('click', handleMainButton);
     document.getElementById('pauseBtn').addEventListener('click', handlePauseButton);
+    document.getElementById('openDashboardBtn').addEventListener('click', () => {
+        chrome.tabs.create({ url: chrome.runtime.getURL('dashboard/index.html') });
+    });
 }
 
 async function handleMainButton() {

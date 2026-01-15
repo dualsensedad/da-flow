@@ -10,20 +10,42 @@ function App() {
   useEffect(() => {
     loadData()
 
-    // Listen for storage changes from extension
-    window.addEventListener('storage', loadData)
-    return () => window.removeEventListener('storage', loadData)
+    // Listen for storage changes
+    if (window.chrome && chrome.storage) {
+      chrome.storage.onChanged.addListener((changes) => {
+        if (changes.sessions || changes.hourlyRates || changes.dailyGoal) {
+          loadData()
+        }
+      })
+    } else {
+      window.addEventListener('storage', loadData)
+    }
   }, [])
 
   const loadData = () => {
-    // Load from localStorage (shared with extension)
-    const storedSessions = localStorage.getItem('da-flow-sessions')
-    const storedRates = localStorage.getItem('da-flow-rates')
-    const storedGoal = localStorage.getItem('da-flow-goal')
+    if (window.chrome && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['sessions', 'hourlyRates', 'dailyGoal'], (result) => {
+        if (result.sessions) setSessions(result.sessions)
+        if (result.hourlyRates) setHourlyRates(result.hourlyRates)
+        if (result.dailyGoal) setDailyGoal(result.dailyGoal)
+      })
+    } else {
+      const storedSessions = localStorage.getItem('da-flow-sessions')
+      const storedRates = localStorage.getItem('da-flow-rates')
+      const storedGoal = localStorage.getItem('da-flow-goal')
 
-    if (storedSessions) setSessions(JSON.parse(storedSessions))
-    if (storedRates) setHourlyRates(JSON.parse(storedRates))
-    if (storedGoal) setDailyGoal(JSON.parse(storedGoal))
+      if (storedSessions) setSessions(JSON.parse(storedSessions))
+      if (storedRates) setHourlyRates(JSON.parse(storedRates))
+      if (storedGoal) setDailyGoal(JSON.parse(storedGoal))
+    }
+  }
+
+  const saveData = (key, data) => {
+    if (window.chrome && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ [key]: data })
+    } else {
+      localStorage.setItem(`da-flow-${key}`, JSON.stringify(data))
+    }
   }
 
   const updateSession = (sessionId, updates) => {
@@ -31,7 +53,7 @@ function App() {
       s.id === sessionId ? { ...s, ...updates } : s
     )
     setSessions(updated)
-    localStorage.setItem('da-flow-sessions', JSON.stringify(updated))
+    saveData('sessions', updated)
   }
 
   const toggleReported = (sessionId) => {
@@ -39,18 +61,18 @@ function App() {
       s.id === sessionId ? { ...s, reportedToDA: !s.reportedToDA } : s
     )
     setSessions(updated)
-    localStorage.setItem('da-flow-sessions', JSON.stringify(updated))
+    saveData('sessions', updated)
   }
 
   const updateHourlyRate = (projectName, rate) => {
     const updated = { ...hourlyRates, [projectName]: rate }
     setHourlyRates(updated)
-    localStorage.setItem('da-flow-rates', JSON.stringify(updated))
+    saveData('hourlyRates', updated)
   }
 
   const updateDailyGoal = (goal) => {
     setDailyGoal(goal)
-    localStorage.setItem('da-flow-goal', JSON.stringify(goal))
+    saveData('dailyGoal', goal)
   }
 
   return (
