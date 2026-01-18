@@ -181,6 +181,50 @@ async function updateUI() {
         timerDisplay.classList.remove('active', 'paused');
         projectDisplay.textContent = 'No active session';
     }
+
+    // Update pay info display
+    await updatePayInfo(status);
+}
+
+async function updatePayInfo(status) {
+    const payInfoEl = document.getElementById('payInfo');
+    const payRateEl = document.getElementById('payRateDisplay');
+    const liveEarningsEl = document.getElementById('liveEarnings');
+
+    if (!status || !status.isActive) {
+        payInfoEl.style.display = 'none';
+        return;
+    }
+
+    // Get rates from storage
+    const result = await chrome.storage.local.get(['hourlyRates', 'bonusRates']);
+    const hourlyRates = result.hourlyRates || {};
+    const bonusRates = result.bonusRates || {};
+
+    const baseRate = hourlyRates[status.projectName] || 0;
+    const bonus = bonusRates[status.projectName] || 0;
+    const totalRate = baseRate + bonus;
+
+    // Format pay rate display
+    let rateText = '';
+    if (baseRate > 0) {
+        rateText = `$${baseRate.toFixed(2)}/hr`;
+        if (bonus > 0) {
+            rateText += ` <span class="bonus">(+$${bonus.toFixed(2)} bonus)</span>`;
+        }
+    } else if (bonus > 0) {
+        rateText = `<span class="bonus">$${bonus.toFixed(2)}/hr bonus</span>`;
+    } else {
+        rateText = 'Rate not set';
+    }
+    payRateEl.innerHTML = rateText;
+
+    // Calculate live earnings
+    const activeMinutes = status.activeMinutes || 0;
+    const earnings = (activeMinutes / 60) * totalRate;
+    liveEarningsEl.textContent = `Earned: $${earnings.toFixed(2)}`;
+
+    payInfoEl.style.display = 'block';
 }
 
 async function updateStats() {
@@ -216,11 +260,11 @@ function formatTime(minutes) {
 }
 
 function startUIUpdates() {
-    // Update UI every 5 seconds when popup is open
+    // Update UI every second for live earnings display
     updateInterval = setInterval(async () => {
         await updateUI();
         await updateStats();
-    }, 5000);
+    }, 1000);
 }
 
 // Clean up on popup close
