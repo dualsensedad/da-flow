@@ -68,7 +68,11 @@
       <div class="modal-rate-info">
         <div class="rate-row">
           <span class="rate-label">Pay Rate:</span>
-          <span class="rate-value" id="modalPayRate">--</span>
+          <div class="rate-input-group">
+            <span class="rate-prefix">$</span>
+            <input type="number" id="modalRateInput" class="rate-input" placeholder="0.00" step="0.01" min="0">
+            <span class="rate-suffix">/hr</span>
+          </div>
         </div>
         <div class="rate-row bonus-row" id="bonusRow" style="display: none;">
           <span class="rate-label">🔥 Bonus:</span>

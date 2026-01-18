@@ -344,3 +344,38 @@ body {
   color: #3b82f6;
   margin-top: 4px;
 }
+
+/* Rate Input in Modal */
+.rate-input-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.rate-input {
+  width: 70px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--accent-green);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.rate-input:focus {
+  outline: none;
+  border-color: var(--accent-green);
+}
+
+.rate-input::placeholder {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.rate-prefix,
+.rate-suffix {
+  color: var(--text-secondary);
+  font-size: 14px;
+}

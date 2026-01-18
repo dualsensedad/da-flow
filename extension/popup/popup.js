@@ -95,17 +95,12 @@ async function showConfirmModal(projectName) {
     const rate = hourlyRates[projectName];
     const bonus = bonusRates[projectName];
 
-    const rateEl = document.getElementById('modalPayRate');
+    // Set the rate input value
+    const rateInput = document.getElementById('modalRateInput');
+    rateInput.value = rate || '';
+
     const bonusEl = document.getElementById('modalBonus');
     const bonusRow = document.getElementById('bonusRow');
-
-    if (rate !== undefined && rate !== null) {
-        rateEl.textContent = `$${rate.toFixed(2)}/hr`;
-        rateEl.classList.remove('unknown');
-    } else {
-        rateEl.textContent = 'Not found - visit dashboard first';
-        rateEl.classList.add('unknown');
-    }
 
     if (bonus !== undefined && bonus !== null && bonus > 0) {
         bonusEl.textContent = `+$${bonus.toFixed(2)}/hr`;
@@ -123,6 +118,16 @@ function hideConfirmModal() {
 
 async function confirmStartSession() {
     const projectName = document.getElementById('projectNameInput').value.trim();
+
+    // Save the entered rate
+    const enteredRate = parseFloat(document.getElementById('modalRateInput').value) || 0;
+    if (enteredRate > 0) {
+        const result = await chrome.storage.local.get(['hourlyRates']);
+        const rates = result.hourlyRates || {};
+        rates[projectName] = enteredRate;
+        await chrome.storage.local.set({ hourlyRates: rates });
+    }
+
     await chrome.runtime.sendMessage({ action: 'startSession', projectName });
     hideConfirmModal();
     await updateUI();
