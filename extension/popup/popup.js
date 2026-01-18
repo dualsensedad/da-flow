@@ -13,13 +13,43 @@ async function initializePopup() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
     if (tab && tab.url && tab.url.includes('app.dataannotation.tech')) {
+        let projectTitle = '';
+        let bonus = 0;
+
         try {
-            const response = await chrome.tabs.sendMessage(tab.id, { action: 'getProjectTitle' });
+            const response = await chrome.tabs.sendMessage(tab.id, { action: 'getProjectInfo' });
             if (response && response.title) {
-                document.getElementById('projectNameInput').value = response.title;
+                projectTitle = response.title;
+                bonus = response.bonus || 0;
             }
         } catch (e) {
-            // Content script may not be loaded
+            // Content script may not be loaded - use fallback
+            console.log('Content script not available, using fallback');
+        }
+
+        // Fallback: Use tab title if content script didn't provide a title
+        if (!projectTitle && tab.title) {
+            projectTitle = tab.title
+                .replace(' - DataAnnotation', '')
+                .replace('DataAnnotation', '')
+                .trim();
+
+            // Check for bonus in title
+            const bonusMatch = projectTitle.match(/\[PRIORITY\s+\+\$(\d+\.?\d*)\]/i);
+            if (bonusMatch) {
+                bonus = parseFloat(bonusMatch[1]);
+                projectTitle = projectTitle.replace(/\[PRIORITY\s+\+\$\d+\.?\d*\]\s*/i, '').trim();
+
+                // Store the bonus
+                const result = await chrome.storage.local.get(['bonusRates']);
+                const bonuses = result.bonusRates || {};
+                bonuses[projectTitle] = bonus;
+                await chrome.storage.local.set({ bonusRates: bonuses });
+            }
+        }
+
+        if (projectTitle) {
+            document.getElementById('projectNameInput').value = projectTitle;
         }
     }
 

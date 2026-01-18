@@ -225,11 +225,22 @@ function checkForActiveSession() {
 // ============== Project Detection & Rate Scraping ==============
 
 function extractProjectTitle() {
+    // Primary: Look for active breadcrumb item (most reliable)
     const breadcrumbActive = document.querySelector('.breadcrumb-item.active');
     if (breadcrumbActive && breadcrumbActive.textContent) {
         return breadcrumbActive.textContent.trim();
     }
 
+    // Fallback 1: Look for ol.breadcrumb structure
+    const olBreadcrumb = document.querySelector('ol.breadcrumb');
+    if (olBreadcrumb) {
+        const lastItem = olBreadcrumb.querySelector('li:last-child');
+        if (lastItem && lastItem.textContent) {
+            return lastItem.textContent.trim();
+        }
+    }
+
+    // Fallback 2: Look for nav with breadcrumb aria-label
     const breadcrumbNav = document.querySelector('nav[aria-label="breadcrumb"]');
     if (breadcrumbNav) {
         const lastItem = breadcrumbNav.querySelector('li:last-child');
@@ -238,28 +249,50 @@ function extractProjectTitle() {
         }
     }
 
+    // Fallback 3: Try h3 elements with DA-specific classes
     const h3s = document.querySelectorAll('h3.tw-text-h3, h3[class*="tw-text"]');
     for (const h3 of h3s) {
         const text = h3.textContent.trim();
-        if (text.length > 0 && text.length < 100 &&
+        if (text.length > 0 && text.length < 150 &&
             !['Projects', 'Qualifications', 'Overview'].includes(text)) {
             return text;
         }
     }
 
-    if (document.title) {
-        return document.title
+    // Fallback 4: Use page title (very reliable for DA pages)
+    if (document.title && !document.title.includes('DataAnnotation') === false) {
+        const cleaned = document.title
             .replace(' - DataAnnotation', '')
             .replace('DataAnnotation', '')
             .trim();
+        if (cleaned.length > 0) {
+            return cleaned;
+        }
     }
 
     return '';
 }
 
 function extractProjectInfo() {
-    const title = extractProjectTitle();
-    return { title };
+    let title = extractProjectTitle();
+    let bonus = 0;
+
+    // Check if title contains a bonus pattern like "[PRIORITY +$5]"
+    const bonusMatch = title.match(/\[PRIORITY\s+\+\$(\d+\.?\d*)\]/i);
+    if (bonusMatch) {
+        bonus = parseFloat(bonusMatch[1]);
+        // Remove the bonus tag from the title for cleaner display
+        title = title.replace(/\[PRIORITY\s+\+\$\d+\.?\d*\]\s*/i, '').trim();
+
+        // Store the bonus immediately
+        chrome.storage.local.get(['bonusRates'], (result) => {
+            const bonuses = result.bonusRates || {};
+            bonuses[title] = bonus;
+            chrome.storage.local.set({ bonusRates: bonuses });
+        });
+    }
+
+    return { title, bonus };
 }
 
 function scrapeAndCacheRates() {
